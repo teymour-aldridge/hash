@@ -8,15 +8,8 @@ CWD = Path.cwd()
 # All jobs for all crates will run if any of these paths change
 ALWAYS_RUN_PATTERNS = ["**/rust-toolchain.toml", ".github/**"]
 
-# Crates which will be tested in release mode
-TEST_IN_RELEASE_CRATES = ["packages/engine"]
-
 # Exclude the stable channel for these crates
-DISABLE_STABLE_PATTERNS = ["packages/engine**", "packages/graph/hash_graph**"]
-
-# Exclude these crates to run `rustdoc` at
-# Note: This will run `rustdoc` for all crates except the virtual package in `packages/engine` and `packages/graph/hash_graph`
-DISABLE_DOC_PATTERNS = ["packages/engine", "packages/graph/hash_graph"]
+DISABLE_STABLE_PATTERNS = ["packages/engine**", "packages/graph**"]
 
 # Try and publish these crates when their version is changed in Cargo.toml
 PUBLISH_PATTERNS = ["packages/libs/error-stack"]
@@ -91,24 +84,6 @@ def filter_for_nightly_only_crates(crates):
     return [crate for crate in crates for pattern in DISABLE_STABLE_PATTERNS if fnmatch(crate, pattern)]
 
 
-def filter_for_crates_to_document(crates):
-    """
-    Returns the crates which should be documented
-    :param crates: a list of paths to crates
-    :return: a list of crate paths
-    """
-    return list(set(crates) - set([crate for crate in crates for pattern in DISABLE_DOC_PATTERNS if fnmatch(crate, pattern)]))
-
-
-def filter_for_crates_with_release_tests(crates):
-    """
-    Returns the crates which should run their test in release mode as well
-    :param crates: a list of paths to crates
-    :return: a list of crate paths
-    """
-    return [crate for crate in crates for pattern in TEST_IN_RELEASE_CRATES if fnmatch(crate, pattern)]
-
-
 def filter_for_publishable_crates(crates):
     """
     Returns the crates which are allowed to be published
@@ -148,12 +123,8 @@ def main():
     available_crates = find_local_crates()
     changed_crates = list(set(filter_for_changed_crates(diffs, available_crates)))
 
-    output("rustfmt", changed_crates)
-    output("clippy", changed_crates)
+    output("lint", changed_crates)
     output("test", changed_crates)
-    output("bench", filter_for_crates_with_release_tests(changed_crates))
-    output("miri", changed_crates)
-    output("doc", filter_for_crates_to_document(changed_crates))
     output("publish", filter_crates_by_changed_version(diffs, filter_for_publishable_crates(changed_crates)))
     output_exclude(changed_crates)
 
