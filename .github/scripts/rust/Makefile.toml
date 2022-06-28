@@ -40,11 +40,6 @@ args = ["run", "--profile", "${CARGO_MAKE_CARGO_PROFILE}"]
 ################################################################################
 ## Lints                                                                      ##
 ################################################################################
-[tasks.lint-flow]
-description = "Runs all lints"
-category = "Lint"
-run_task = { name = [ "format", "clippy", "docs" ] }
-
 [tasks.format]
 condition = { channels = ["nightly"] }
 description = "Runs rustfmt"
@@ -130,11 +125,6 @@ args = ["rustdoc", "--all-features", "--", "-Z", "unstable-options", "--check", 
 ################################################################################
 ## Tests                                                                      ##
 ################################################################################
-[tasks.test-flow]
-description = "Runs all tests"
-category = "Test"
-run_task = { name = [ "test", "miri" ] }
-
 [tasks.test]
 description = "Runs the test suite"
 category = "Test"

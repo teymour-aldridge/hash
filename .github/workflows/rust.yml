@@ -102,9 +102,17 @@ jobs:
           key: ${{ runner.os }}-lint-${{ matrix.directory }}-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-lint-${{ matrix.directory }}-${{ matrix.toolchain }}
 
-      - name: Run lints
+      - name: Check formatting
         working-directory: ${{ matrix.directory }}
-        run: cargo make lint-flow
+        run: cargo make format
+
+      - name: Check clippy
+        working-directory: ${{ matrix.directory }}
+        run: cargo make clippy
+
+      - name: Check documentation
+        working-directory: ${{ matrix.directory }}
+        run: cargo make doc
 
   test:
     name: test
@@ -163,7 +171,11 @@ jobs:
 
       - name: Run tests
         working-directory: ${{ matrix.directory }}
-        run: cargo make --profile ${{ matrix.profile }} test-flow
+        run: cargo make --profile ${{ matrix.profile }} test
+
+      - name: Run miri
+        working-directory: ${{ matrix.directory }}
+        run: cargo make --profile ${{ matrix.profile }} miri
 
       # Non-empty diff could be a Cargo.lock that wasn't committed.
       - name: Ensure empty git diff
