@@ -59,3 +59,32 @@ impl Datastore for PostgresDatabase {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const CONNECTION_STRING: &str = "postgres://postgres:postgres@localhost/postgres";
+
+    // TODO - long term we likely want to gate these behind config or something, probably do not
+    //  want to add a dependency on the external service for *unit* tests
+
+    #[tokio::test]
+    async fn can_connect() {
+        PostgresDatabase::new(CONNECTION_STRING)
+            .await
+            .expect("Couldn't connect to the Postgres DB");
+    }
+
+    #[tokio::test]
+    async fn get_entity_types() {
+        let db = PostgresDatabase::new(CONNECTION_STRING)
+            .await
+            .expect("Couldn't connect to the Postgres DB");
+
+        let entity_types = sqlx::query!("SELECT * from entity_types")
+            .fetch_all(&db.pool)
+            .await
+            .expect("Failed to select all entity_types");
+    }
+}
