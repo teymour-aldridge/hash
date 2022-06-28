@@ -33,7 +33,8 @@
     clippy::verbose_file_reads
 )]
 
-pub mod db;
+pub mod datastore;
+pub mod types;
 
 #[cfg(test)]
 mod tests {
