@@ -76,6 +76,9 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v2
 
+      - name: Remove default members
+        run: sed '/default-members/d' -i ${{ matrix.directory }}/Cargo.toml
+
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -129,6 +132,9 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v2
 
+      - name: Remove default members
+        run: sed '/default-members/d' -i ${{ matrix.directory }}/Cargo.toml
+
       - name: Install Rust
         id: toolchain
         uses: actions-rs/toolchain@v1
@@ -175,8 +181,13 @@ jobs:
         working-directory: ${{ matrix.directory }}
         run: cargo make --profile ${{ matrix.profile }} test-flow
 
+      # Non-empty diff could be a Cargo.lock that wasn't committed.
       - name: Ensure empty git diff
-        run: git --no-pager diff --exit-code --color
+        run: |
+          # Restore files modified for CI
+          git checkout HEAD -- "${{ matrix.directory }}/Cargo.toml"
+
+          git --no-pager diff --exit-code --color
 
       - name: Upload to DataDog
         if: matrix.directory == 'packages/engine' && matrix.profile == 'production'
