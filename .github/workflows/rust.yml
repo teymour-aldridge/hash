@@ -85,7 +85,7 @@ jobs:
 
       - name: Install cargo-make
         run: |
-          cargo install cargo-quickinstall
+          cargo install --debug cargo-quickinstall
           cargo quickinstall cargo-make
 
       - name: Cache dependencies
@@ -139,7 +139,7 @@ jobs:
 
       - name: Install cargo-make
         run: |
-          cargo install cargo-quickinstall
+          cargo install --debug cargo-quickinstall
           cargo quickinstall cargo-make
 
       - name: Install Python
@@ -158,8 +158,8 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/git/checkouts
             **/target/
-          key: ${{ runner.os }}-test-${{ matrix.directory }}-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-test-${{ matrix.directory }}-${{ matrix.toolchain }}
+          key: ${{ runner.os }}-test-${{ matrix.directory }}-${{ matrix.toolchain }}-${{ matrix.profile }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-test-${{ matrix.directory }}-${{ matrix.toolchain }}-${{ matrix.profile }}
 
       - name: Build tests
         if: matrix.directory == 'packages/engine'

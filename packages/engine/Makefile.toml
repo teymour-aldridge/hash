@@ -22,3 +22,11 @@ dependencies = ["install-cargo-hack"]
 [tasks.build-test-release]
 extend = "test-release"
 args = ["test", "--no-run", "--all-features", "--release"]
+
+
+# Rustdoc must not be executed on the workspace root.
+[tasks.public-docs]
+condition = { files_not_exist = ["${CARGO_MAKE_WORKING_DIRECTORY}/rustfmt.toml"] }
+
+[tasks.private-docs]
+condition = { files_not_exist = ["${CARGO_MAKE_WORKING_DIRECTORY}/rustfmt.toml"] }
