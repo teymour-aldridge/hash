@@ -8,7 +8,8 @@ pub enum GraphElementType {
     LinkType(LinkType),
 }
 
-// TODO - Investigate if we can generate the structure of these from the same source of truth as the DB schemas
+// TODO - Investigate if we can generate the structure of these from the same source of truth as the
+// DB schemas
 pub struct DataType;
 
 pub struct PropertyType;

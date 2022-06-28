@@ -1,4 +1,5 @@
 use std::fmt;
+
 use error_stack::{Context, Result};
 use graph::datastore::PostgresDatabase;
 

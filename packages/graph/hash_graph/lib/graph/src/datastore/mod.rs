@@ -1,9 +1,11 @@
 use std::fmt;
-use error_stack::{Result, Context};
+
+use error_stack::{Context, Result};
 
 mod postgres;
 
 pub use postgres::PostgresDatabase;
+
 use crate::types::{GraphElementIdentifier, GraphElementType};
 
 #[derive(Debug)]

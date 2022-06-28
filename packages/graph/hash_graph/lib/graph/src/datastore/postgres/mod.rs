@@ -1,7 +1,10 @@
-use sqlx::{PgPool};
 use error_stack::{IntoReport, Result};
-use crate::datastore::{Datastore, DatastoreError};
-use crate::types::{GraphElementIdentifier, GraphElementType};
+use sqlx::PgPool;
+
+use crate::{
+    datastore::{Datastore, DatastoreError},
+    types::{GraphElementIdentifier, GraphElementType},
+};
 
 /// A Postgres-backed Datastore
 pub struct PostgresDatabase {
@@ -15,12 +18,12 @@ impl PostgresDatabase {
     /// If creating a [`PgPool`] connection returns an error
     pub async fn new(connect_url: &str) -> Result<Self, sqlx::Error> {
         Ok(Self {
-            pool: PgPool::connect(connect_url).await.report()?
+            pool: PgPool::connect(connect_url).await.report()?,
         })
     }
 }
 
-#[allow(clippy::match_same_arms, reason="scaffolding while WIP")]
+#[allow(clippy::match_same_arms, reason = "scaffolding while WIP")]
 impl Datastore for PostgresDatabase {
     fn create(element: GraphElementType) -> Result<(), DatastoreError> {
         match element {
@@ -47,7 +50,10 @@ impl Datastore for PostgresDatabase {
         unimplemented!()
     }
 
-    fn update(_id: GraphElementIdentifier, element: GraphElementType) -> Result<(), DatastoreError> {
+    fn update(
+        _id: GraphElementIdentifier,
+        element: GraphElementType,
+    ) -> Result<(), DatastoreError> {
         match element {
             GraphElementType::DataType(_) => {
                 unimplemented!();
