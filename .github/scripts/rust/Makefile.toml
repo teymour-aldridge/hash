@@ -39,6 +39,7 @@ run_task = [
 ]
 
 [tasks.format]
+condition = { channels = ["nightly"] }
 description = "Runs rustfmt"
 category = "Lint"
 command = "cargo"
@@ -46,6 +47,7 @@ args = ["fmt"]
 dependencies = ["install-rustfmt"]
 
 [tasks.format-check]
+condition = { channels = ["nightly"] }
 description = "Runs rustfmt and checks for errors"
 category = "Lint"
 command = "cargo"
@@ -67,6 +69,7 @@ args = ["hack", "clippy", "--no-deps", "--tests", "@@split(CARGO_HACK_FLAGS, )",
 dependencies = ["install-cargo-hack", "install-clippy"]
 
 [tasks.public-docs]
+condition = { channels = ["nightly"] }
 private = true
 category = "Lint"
 command = "cargo"
