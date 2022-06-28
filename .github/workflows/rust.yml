@@ -28,6 +28,8 @@ jobs:
       bench: ${{ steps.crates.outputs.bench }}
       publish: ${{ steps.crates.outputs.publish }}
       exclude: ${{ steps.crates.outputs.exclude }}
+      samples: ${{ steps.samples.outputs.samples }}
+      nightly: ${{ steps.toolchains.outputs.nightly }}
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2

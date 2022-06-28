@@ -28,10 +28,22 @@ def generate_diffs():
 
 def find_local_crates():
     """
-    Returns all available crates in the workspace
+    Returns all available crates in the workspace.
+    
+    If the crate is in a subcrate of another crate, only that acrate will be returned.
     :return: a list of crate paths
     """
-    return [path.relative_to(CWD).parent for path in CWD.rglob("Cargo.toml")]
+    all_crates = [path.relative_to(CWD).parent for path in CWD.rglob("Cargo.toml")]
+    checked_crates = []
+    for crate in all_crates:
+        seen = False
+        for other_crate in all_crates:
+            if str(crate).startswith(str(other_crate)) and crate != other_crate:
+                seen = True
+                break
+        if not seen:
+            checked_crates.append(crate)
+    return checked_crates
 
 
 def filter_for_changed_crates(diffs, crates):
