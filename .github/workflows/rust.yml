@@ -16,7 +16,6 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  CARGO_HACK_FLAGS: --feature-powerset --features build-nng --exclude-features default --ignore-unknown-features --optional-deps clap
 
 jobs:
   setup:
@@ -103,6 +102,7 @@ jobs:
           restore-keys: ${{ runner.os }}-lint-${{ matrix.directory }}-${{ matrix.toolchain }}
 
       - name: Check formatting
+        if: matrix.toolchain != 'stable'
         working-directory: ${{ matrix.directory }}
         run: cargo make format
 
@@ -111,6 +111,7 @@ jobs:
         run: cargo make clippy
 
       - name: Check documentation
+        if: matrix.toolchain != 'stable'
         working-directory: ${{ matrix.directory }}
         run: cargo make doc
 
@@ -174,6 +175,7 @@ jobs:
         run: cargo make --profile ${{ matrix.profile }} test
 
       - name: Run miri
+        if: matrix.toolchain != 'stable'
         working-directory: ${{ matrix.directory }}
         run: cargo make --profile ${{ matrix.profile }} miri
 
