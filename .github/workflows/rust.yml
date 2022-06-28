@@ -166,7 +166,7 @@ jobs:
       - name: Build tests
         if: matrix.directory == 'packages/engine'
         working-directory: ${{ matrix.directory }}
-        run: cargo make --profile {{ matrix.directory }} build-test
+        run: cargo make --profile ${{ matrix.profile }} build-test
 
       - name: Setup Python environment
         if: matrix.directory == 'packages/engine'
@@ -175,7 +175,7 @@ jobs:
 
       - name: Run tests
         working-directory: ${{ matrix.directory }}
-        run: cargo make --profile {{ matrix.directory }} test-flow
+        run: cargo make --profile ${{ matrix.profile }} test-flow
 
       - name: Ensure empty git diff
         run: git --no-pager diff --exit-code --color
