@@ -76,9 +76,6 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v2
 
-      - name: Remove default members
-        run: sed '/default-members/d' -i ${{ matrix.directory }}/Cargo.toml
-
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -132,9 +129,6 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v2
 
-      - name: Remove default members
-        run: sed '/default-members/d' -i ${{ matrix.directory }}/Cargo.toml
-
       - name: Install Rust
         id: toolchain
         uses: actions-rs/toolchain@v1
@@ -166,16 +160,6 @@ jobs:
             **/target/
           key: ${{ runner.os }}-test-${{ matrix.directory }}-${{ matrix.toolchain }}-${{ matrix.profile }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-test-${{ matrix.directory }}-${{ matrix.toolchain }}-${{ matrix.profile }}
-
-      - name: Build tests
-        if: matrix.directory == 'packages/engine'
-        working-directory: ${{ matrix.directory }}
-        run: cargo make --profile ${{ matrix.profile }} build-test
-
-      - name: Setup Python environment
-        if: matrix.directory == 'packages/engine'
-        working-directory: ${{ matrix.directory }}
-        run: lib/execution/src/runner/python/setup.sh python3.7
 
       - name: Run tests
         working-directory: ${{ matrix.directory }}

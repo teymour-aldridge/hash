@@ -2,23 +2,3 @@ extend = { path = "../../../.github/scripts/rust/Makefile.toml" }
 
 [tasks.default]
 alias = "run"
-
-################################################################################
-## Build                                                                      ##
-################################################################################
-[tasks.build]
-description = "Builds the crate depending on the specified profile"
-category = "Build"
-run_task = [
-    { name = "build-debug", condition = { profiles = ["development"] } },
-    { name = "build-release", condition = { profiles = ["production"] } },
-]
-
-[tasks.build-debug]
-private = true
-command = "cargo"
-args = ["build", "--all-features"]
-
-[tasks.build-release]
-extend = "build-debug"
-args = ["build", "--all-features", "--release"]

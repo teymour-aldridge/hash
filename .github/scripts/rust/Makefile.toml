@@ -1,82 +1,129 @@
 [config]
 skip_core_tasks = true
-reduce_output = true
 
 [env]
-RUST_BACKTRACE=1
 CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
 CARGO_HACK_FLAGS = "--feature-powerset --exclude-features default"
 
+[env.development]
+CARGO_MAKE_CARGO_PROFILE = "dev"
+
+[env.release]
+CARGO_MAKE_CARGO_PROFILE = "release"
+
+[env.production]
+CARGO_MAKE_CARGO_PROFILE = "release"
+
+
+################################################################################
+## Build                                                                      ##
+################################################################################
+[tasks.build]
+description = "Builds the crate"
+category = "Build"
+workspace = false
+command = "cargo"
+args = ["build", "--profile", "${CARGO_MAKE_CARGO_PROFILE}"]
 
 
 ################################################################################
 ## Run                                                                        ##
 ################################################################################
 [tasks.run]
-description = "Runs the binary and runs it"
+description = "Builds the binary and runs it"
 category = "Run"
 workspace = false
-run_task = [
-    { name = "run-debug", condition = { profiles = ["development"] } },
-    { name = "run-release", condition = { profiles = ["production"] } },
-]
-
-[tasks.run-debug]
-private = true
 command = "cargo"
-args = ["run", "--all-features"]
+args = ["run", "--profile", "${CARGO_MAKE_CARGO_PROFILE}"]
 
-[tasks.run-release]
-extend = "build-debug"
-args = ["run", "--all-features"]
 
 ################################################################################
 ## Lints                                                                      ##
 ################################################################################
 [tasks.lint-flow]
-run_task = [
-    { name = [ "format-check", "clippy", "public-docs", "private-docs" ] }
-]
+description = "Runs all lints"
+category = "Lint"
+run_task = { name = [ "format", "clippy", "docs" ] }
 
 [tasks.format]
 condition = { channels = ["nightly"] }
 description = "Runs rustfmt"
 category = "Lint"
+workspace = false
+run_task = [
+    { name = ["format-task-ci"] , condition = { env_true = ["CARGO_MAKE_CI" ] } },
+    { name = ["format-task"] },
+]
+
+[tasks.format-task]
+private = true
 command = "cargo"
 args = ["fmt"]
 dependencies = ["install-rustfmt"]
 
-[tasks.format-check]
-condition = { channels = ["nightly"] }
-description = "Runs rustfmt and checks for errors"
-category = "Lint"
-command = "cargo"
+[tasks.format-task-ci]
+extend = "format-task"
 args = ["fmt", "--", "--check"]
-dependencies = ["install-rustfmt"]
 
 [tasks.check]
 description = "Checks the code"
 category = "Lint"
 command = "cargo"
-args = ["hack", "check", "--tests"]
-dependencies = ["install-cargo-hack", "@@split(CARGO_HACK_FLAGS, )"]
+args = ["hack", "check", "--tests", "@@split(CARGO_HACK_FLAGS, )", "--profile", "${CARGO_MAKE_CARGO_PROFILE}"]
+dependencies = ["install-cargo-hack"]
 
 [tasks.clippy]
 description = "Runs clippy"
 category = "Lint"
+run_task = [
+    { name = ["clippy-task-ci"] , condition = { env_true = ["CARGO_MAKE_CI" ] } },
+    { name = ["clippy-task"] },
+]
+
+[tasks.clippy-task]
+private = true
 command = "cargo"
-args = ["hack", "clippy", "--no-deps", "--tests", "@@split(CARGO_HACK_FLAGS, )", "--", "-D", "warnings"]
+args = ["hack", "clippy", "--no-deps", "--tests", "@@split(CARGO_HACK_FLAGS, )", "--profile", "${CARGO_MAKE_CARGO_PROFILE}"]
 dependencies = ["install-cargo-hack", "install-clippy"]
 
-[tasks.public-docs]
+[tasks.clippy-task-ci]
+extend = "run-clippy"
+args = ["hack", "clippy", "--no-deps", "--tests", "@@split(CARGO_HACK_FLAGS, )", "--profile", "${CARGO_MAKE_CARGO_PROFILE}", "--", "-D", "warnings"]
+
+
+################################################################################
+## Docs                                                                       ##
+################################################################################
+[tasks.doc]
 condition = { channels = ["nightly"] }
+description = "Builds the documentation"
+category = "Docs"
+workspace = false
+run_task = [
+    { name = ["doc-task-ci-public", "doc-task-ci-private"] , fork = true, condition = { env_true = ["CARGO_MAKE_CI" ] } },
+    { name = ["doc-task"] },
+]
+
+[tasks.doc-task]
+condition = { env_false = ["CARGO_MAKE_CI"] }
 private = true
-category = "Lint"
+command = "cargo"
+args = ["doc", "--workspace", "--all-features", "--no-deps"]
+
+[tasks.doc-open]
+extend = "generate-docs"
+private = false
+workspace = false
+description = "Builds the documentation and opens then"
+args = ["doc", "--workspace", "--all-features", "--no-deps", "--open"]
+
+[tasks.doc-task-ci-public]
+private = true
 command = "cargo"
 args = ["rustdoc", "--all-features", "--", "-Z", "unstable-options", "--check", "-D", "warnings"]
 
-[tasks.private-docs]
-extend = "public-docs"
+[tasks.doc-task-ci-private]
+extend = "doc-task-ci-public"
 args = ["rustdoc", "--all-features", "--", "-Z", "unstable-options", "--check", "--document-private-items", "-D", "warnings"]
 
 
@@ -84,34 +131,22 @@ args = ["rustdoc", "--all-features", "--", "-Z", "unstable-options", "--check", 
 ## Tests                                                                      ##
 ################################################################################
 [tasks.test-flow]
-run_task = [
-    { name = [ "test", "miri" ] }
-]
+description = "Runs all tests"
+category = "Test"
+run_task = { name = [ "test", "miri" ] }
 
 [tasks.test]
-description = "Runs the test suite depending on the specified profile"
+description = "Runs the test suite"
 category = "Test"
-run_task = [
-    { name = "test-debug", condition = { profiles = ["development"] } },
-    { name = "test-release", condition = { profiles = ["production"] } },
-]
-
-[tasks.test-debug]
-private = true
 command = "cargo"
-args = ["hack", "test", "--no-fail-fast", "@@split(CARGO_HACK_FLAGS, )"]
+args = ["hack", "test", "--no-fail-fast", "@@split(CARGO_HACK_FLAGS, )", "--profile", "${CARGO_MAKE_CARGO_PROFILE}"]
 dependencies = ["install-cargo-hack"]
-
-[tasks.test-release]
-extend = "test-debug"
-args = ["hack", "test", "--no-fail-fast", "@@split(CARGO_HACK_FLAGS, )", "--release", "--", "--test-threads", "1"]
 
 [tasks.miri]
 condition = { channels = ["nightly"] }
 description = "Runs miri tests"
-category = "Test"
-command = "cargo"
-args = ["hack", "miri", "test", "@@split(CARGO_HACK_FLAGS, )"]
+extend = "test"
+args = ["hack", "miri", "test", "@@split(CARGO_HACK_FLAGS, )", "--profile", "${CARGO_MAKE_CARGO_PROFILE}"]
 dependencies = ["install-cargo-hack", "install-miri"]
 
 

@@ -6,27 +6,49 @@ CARGO_HACK_FLAGS = "--feature-powerset --features build-nng --exclude-features d
 [tasks.default]
 alias = "run"
 
+# The `test` task will execute these task in the folloing order:
+#  1. Build the tests
+#  2. Setup python
+#  3. Run unit tests
+#  4. Run the integration tests
+
+[tasks.test]
+clear = true
+workspace = false
+description = "Runs the test suite"
+category = "Test"
+run_task = { name = ["build-test", "setup-python", "run-test-suite", "run-integrations"] }
 
 [tasks.build-test]
-description = "Builds the test suite depending on the specified profile"
-category = "Test"
-run_task = [
-    { name = "build-test-debug", condition = { profiles = ["development"] } },
-    { name = "build-test-release", condition = { profiles = ["production"] } },
-]
+private = true
+extend = "build"
+args = ["build", "-p", "memory", "--profile", "${CARGO_MAKE_CARGO_PROFILE}"]
 
-[tasks.build-test-debug]
-extend = "test-debug"
-dependencies = ["install-cargo-hack"]
+[tasks.setup-python]
+private = true
+script = '''
+#!/usr/bin/env bash
+lib/execution/src/runner/python/setup.sh python3.7
+'''
 
-[tasks.build-test-release]
-extend = "test-release"
-args = ["test", "--no-run", "--all-features", "--release"]
+[tasks.run-test-suite]
+private = true
+run_task = { name = "run-tests", fork = true }
+
+[tasks.run-tests]
+private = true
+command = "cargo"
+args = ["hack", "test", "--no-fail-fast", "@@split(CARGO_HACK_FLAGS, )", "--profile", "${CARGO_MAKE_CARGO_PROFILE}"]
+
+[tasks.run-integrations]
+private = true
+command = "cargo"
+args = ["test", "--workspace", "--test", "integration", "--no-fail-fast", "--profile", "${CARGO_MAKE_CARGO_PROFILE}", "--all-features"]
 
 
 # Rustdoc must not be executed on the workspace root.
-[tasks.public-docs]
-condition = { files_not_exist = ["${CARGO_MAKE_WORKING_DIRECTORY}/rustfmt.toml"] }
+[tasks.doc-task-ci-public]
+condition = { env_false = ["CARGO_MAKE_CRATE_IS_WORKSPACE"] }
 
-[tasks.private-docs]
-condition = { files_not_exist = ["${CARGO_MAKE_WORKING_DIRECTORY}/rustfmt.toml"] }
+[tasks.doc-task-ci-private]
+condition = { env_false = ["CARGO_MAKE_CRATE_IS_WORKSPACE"] }
