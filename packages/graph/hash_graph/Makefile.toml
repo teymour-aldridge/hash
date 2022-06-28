@@ -1,4 +1,7 @@
 extend = { path = "../../../.github/scripts/rust/Makefile.toml" }
 
+[env.production]
+CARGO_MAKE_CARGO_PROFILE = "production"
+
 [tasks.default]
 alias = "run"

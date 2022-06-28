@@ -87,7 +87,7 @@ args = ["hack", "clippy", "--no-deps", "--tests", "@@split(CARGO_HACK_FLAGS, )",
 dependencies = ["install-cargo-hack", "install-clippy"]
 
 [tasks.clippy-task-ci]
-extend = "run-clippy"
+extend = "clippy-task"
 args = ["hack", "clippy", "--no-deps", "--tests", "@@split(CARGO_HACK_FLAGS, )", "--profile", "${CARGO_MAKE_CARGO_PROFILE}", "--", "-D", "warnings"]
 
 
