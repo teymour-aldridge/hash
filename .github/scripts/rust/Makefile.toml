@@ -107,6 +107,7 @@ extend = "test-debug"
 args = ["hack", "test", "--no-fail-fast", "@@split(CARGO_HACK_FLAGS, )", "--release", "--", "--test-threads", "1"]
 
 [tasks.miri]
+condition = { channels = ["nightly"] }
 description = "Runs miri tests"
 category = "Test"
 command = "cargo"
@@ -131,4 +132,5 @@ install_crate = { rustup_component_name = "rustfmt" }
 
 [tasks.install-miri]
 private = true
+condition = { channels = ["nightly"] }
 install_crate = { rustup_component_name = "miri" }
