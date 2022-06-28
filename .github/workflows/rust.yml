@@ -105,7 +105,7 @@ jobs:
           key: ${{ runner.os }}-lint-${{ matrix.directory }}-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-lint-${{ matrix.directory }}-${{ matrix.toolchain }}
 
-      - name: Run lints rustfmt
+      - name: Run lints
         working-directory: ${{ matrix.directory }}
         run: cargo make lint-flow
 
