@@ -1,0 +1,131 @@
+[config]
+skip_core_tasks = true
+reduce_output = true
+
+[env]
+RUST_BACKTRACE=1
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+CARGO_HACK_FLAGS = "--feature-powerset --exclude-features default"
+
+
+
+################################################################################
+## Run                                                                        ##
+################################################################################
+[tasks.run]
+description = "Runs the binary and runs it"
+category = "Run"
+workspace = false
+run_task = [
+    { name = "run-debug", condition = { profiles = ["development"] } },
+    { name = "run-release", condition = { profiles = ["production"] } },
+]
+
+[tasks.run-debug]
+private = true
+command = "cargo"
+args = ["run", "--all-features"]
+
+[tasks.run-release]
+extend = "build-debug"
+args = ["run", "--all-features"]
+
+################################################################################
+## Lints                                                                      ##
+################################################################################
+[tasks.lint-flow]
+run_task = [
+    { name = [ "format-check", "clippy", "public-docs", "private-docs" ] }
+]
+
+[tasks.format]
+description = "Runs rustfmt"
+category = "Lint"
+command = "cargo"
+args = ["fmt"]
+dependencies = ["install-rustfmt"]
+
+[tasks.format-check]
+description = "Runs rustfmt and checks for errors"
+category = "Lint"
+command = "cargo"
+args = ["fmt", "--", "--check"]
+dependencies = ["install-rustfmt"]
+
+[tasks.check]
+description = "Checks the code"
+category = "Lint"
+command = "cargo"
+args = ["hack", "check", "--tests"]
+dependencies = ["install-cargo-hack", "@@split(CARGO_HACK_FLAGS, )"]
+
+[tasks.clippy]
+description = "Runs clippy"
+category = "Lint"
+command = "cargo"
+args = ["hack", "clippy", "--no-deps", "--tests", "@@split(CARGO_HACK_FLAGS, )", "--", "-D", "warnings"]
+dependencies = ["install-cargo-hack", "install-clippy"]
+
+[tasks.public-docs]
+private = true
+category = "Lint"
+command = "cargo"
+args = ["rustdoc", "--all-features", "--", "-Z", "unstable-options", "--check", "-D", "warnings"]
+
+[tasks.private-docs]
+extend = "public-docs"
+args = ["rustdoc", "--all-features", "--", "-Z", "unstable-options", "--check", "--document-private-items", "-D", "warnings"]
+
+
+################################################################################
+## Tests                                                                      ##
+################################################################################
+[tasks.test-flow]
+run_task = [
+    { name = [ "test", "miri" ] }
+]
+
+[tasks.test]
+description = "Runs the test suite depending on the specified profile"
+category = "Test"
+run_task = [
+    { name = "test-debug", condition = { profiles = ["development"] } },
+    { name = "test-release", condition = { profiles = ["production"] } },
+]
+
+[tasks.test-debug]
+private = true
+command = "cargo"
+args = ["hack", "test", "--no-fail-fast", "@@split(CARGO_HACK_FLAGS, )"]
+dependencies = ["install-cargo-hack"]
+
+[tasks.test-release]
+extend = "test-debug"
+args = ["hack", "test", "--no-fail-fast", "@@split(CARGO_HACK_FLAGS, )", "--release", "--", "--test-threads", "1"]
+
+[tasks.miri]
+description = "Runs miri tests"
+category = "Test"
+command = "cargo"
+args = ["hack", "miri", "test", "@@split(CARGO_HACK_FLAGS, )"]
+dependencies = ["install-cargo-hack", "install-miri"]
+
+
+################################################################################
+## Tools                                                                      ##
+################################################################################
+[tasks.install-cargo-hack]
+private = true
+install_crate = { crate_name = "cargo-hack", binary = "cargo", test_arg = ["hack", "--version"] }
+
+[tasks.install-clippy]
+private = true
+install_crate = { rustup_component_name = "clippy" }
+
+[tasks.install-rustfmt]
+private = true
+install_crate = { rustup_component_name = "rustfmt" }
+
+[tasks.install-miri]
+private = true
+install_crate = { rustup_component_name = "miri" }

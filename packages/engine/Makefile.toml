@@ -1,0 +1,24 @@
+extend = { path = "../../.github/scripts/rust/Makefile.toml" }
+
+[env]
+CARGO_HACK_FLAGS = "--feature-powerset --features build-nng --exclude-features default --ignore-unknown-features --optional-deps clap"
+
+[tasks.default]
+alias = "run"
+
+
+[tasks.build-test]
+description = "Builds the test suite depending on the specified profile"
+category = "Test"
+run_task = [
+    { name = "build-test-debug", condition = { profiles = ["development"] } },
+    { name = "build-test-release", condition = { profiles = ["production"] } },
+]
+
+[tasks.build-test-debug]
+extend = "test-debug"
+dependencies = ["install-cargo-hack"]
+
+[tasks.build-test-release]
+extend = "test-release"
+args = ["test", "--no-run", "--all-features", "--release"]
