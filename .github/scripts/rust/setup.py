@@ -9,7 +9,7 @@ CWD = Path.cwd()
 ALWAYS_RUN_PATTERNS = ["**/rust-toolchain.toml", ".github/**"]
 
 # Exclude the stable channel for these crates
-DISABLE_STABLE_PATTERNS = ["packages/engine**", "packages/graph**"]
+DISABLE_STABLE_PATTERNS = ["packages/engine**", "packages/graph/hash_graph**"]
 
 # Try and publish these crates when their version is changed in Cargo.toml
 PUBLISH_PATTERNS = ["packages/libs/error-stack"]
@@ -30,7 +30,7 @@ def find_local_crates():
     """
     Returns all available crates in the workspace.
     
-    If the crate is in a subcrate of another crate, only that acrate will be returned.
+    If the crate is in a sub-crate of another crate, only the super-crate will be returned.
     :return: a list of crate paths
     """
     all_crates = [path.relative_to(CWD).parent for path in CWD.rglob("Cargo.toml")]
