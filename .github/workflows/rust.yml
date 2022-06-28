@@ -84,10 +84,9 @@ jobs:
           override: true
 
       - name: Install cargo-make
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: --debug cargo-make
+        run: |
+          cargo install cargo-quickinstall
+          cargo quickinstall cargo-make
 
       - name: Cache dependencies
         uses: actions/cache@v2
@@ -139,10 +138,9 @@ jobs:
           override: true
 
       - name: Install cargo-make
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: --debug cargo-make
+        run: |
+          cargo install cargo-quickinstall
+          cargo quickinstall cargo-make
 
       - name: Install Python
         uses: actions/setup-python@v2
