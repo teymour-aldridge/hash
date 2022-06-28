@@ -9,6 +9,10 @@ pub struct PostgresDatabase {
 }
 
 impl PostgresDatabase {
+    /// Creates a new `PostgresDatabase` object
+    ///
+    /// # Errors
+    /// If creating a [`PgPool`] connection returns an error
     pub async fn new(connect_url: &str) -> Result<Self, sqlx::Error> {
         Ok(Self {
             pool: PgPool::connect(connect_url).await.report()?
@@ -16,6 +20,7 @@ impl PostgresDatabase {
     }
 }
 
+#[allow(clippy::match_same_arms, reason="scaffolding while WIP")]
 impl Datastore for PostgresDatabase {
     fn create(element: GraphElementType) -> Result<(), DatastoreError> {
         match element {
