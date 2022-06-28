@@ -71,6 +71,7 @@ jobs:
         toolchain:
           - stable
           - ${{ needs.setup.outputs.nightly }}
+        exclude: ${{ fromJSON(needs.setup.outputs.exclude) }}
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
