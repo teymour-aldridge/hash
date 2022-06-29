@@ -18,7 +18,7 @@ description = "Builds the crate"
 category = "Build"
 workspace = false
 command = "cargo"
-args = ["build", "--profile", "${CARGO_MAKE_CARGO_PROFILE}", "@@remove-empty(CARGO_MAKE_CARGO_VERBOSE_FLAGS)", "@@split(CARGO_MAKE_CARGO_BUILD_TEST_FLAGS, )", "${@}"]
+args = ["build", "--profile", "${CARGO_MAKE_CARGO_PROFILE}", "${@}"]
 
 
 ################################################################################
@@ -37,7 +37,7 @@ args = ["run", "--profile", "${CARGO_MAKE_CARGO_PROFILE}", "${@}"]
 ################################################################################
 [tasks.format]
 condition = { channels = ["nightly"] }
-description = "Runs rustfmt"
+description = "Runs the rustfmt formatter"
 category = "Lint"
 workspace = false
 run_task = [
@@ -56,14 +56,14 @@ extend = "format-task"
 args = ["fmt", "--", "--check"]
 
 [tasks.check]
-description = "Checks the code"
+description = "Checks the crate with all feature flag permutations"
 category = "Lint"
 command = "cargo"
 args = ["hack", "check", "--tests", "@@split(CARGO_HACK_FLAGS, )", "--profile", "${CARGO_MAKE_CARGO_PROFILE}", "${@}"]
 dependencies = ["install-cargo-hack"]
 
 [tasks.clippy]
-description = "Runs clippy"
+description = "Runs clippy with all feature flag permutations"
 category = "Lint"
 run_task = [
     { name = ["clippy-task-ci"] , condition = { env_true = ["CARGO_MAKE_CI" ] } },
@@ -86,7 +86,7 @@ args = ["hack", "clippy", "--no-deps", "--tests", "@@split(CARGO_HACK_FLAGS, )",
 ################################################################################
 [tasks.doc]
 condition = { channels = ["nightly"] }
-description = "Builds the documentation"
+description = "Builds the documentation for the crate"
 category = "Docs"
 workspace = false
 run_task = [
@@ -114,7 +114,7 @@ args = ["rustdoc", "--all-features", "--", "-Z", "unstable-options", "--check", 
 ## Tests                                                                      ##
 ################################################################################
 [tasks.test]
-description = "Runs the test suite"
+description = "Runs the test suite with all feature flag permutations"
 category = "Test"
 command = "cargo"
 args = ["hack", "test", "--no-fail-fast", "@@split(CARGO_HACK_FLAGS, )", "--profile", "${CARGO_MAKE_CARGO_PROFILE}"]
@@ -122,7 +122,7 @@ dependencies = ["install-cargo-hack"]
 
 [tasks.miri]
 condition = { channels = ["nightly"] }
-description = "Runs miri tests"
+description = "Runs miri tests with all feature flag permutations"
 category = "Test"
 command = "cargo"
 args = ["hack", "miri", "test", "@@split(CARGO_HACK_FLAGS, )", "--profile", "${CARGO_MAKE_CARGO_PROFILE}"]
