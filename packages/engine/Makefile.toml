@@ -7,29 +7,32 @@ CARGO_HACK_FLAGS = "--feature-powerset --features build-nng --exclude-features d
 alias = "run"
 
 # The `test` task will execute these task in the folloing order:
-#  1. Build the test dependencies
-#  2. Setup python
-#  3. Run unit tests
+#  1. Run unit tests
+#  2. Build the test dependencies (CI only)
+#  3. Setup python (CI only)
 #  4. Run the integration tests
+# This workaround is needed as `tasks.setup-python` must only be executed from the workspace root, so `tasks.test` has
+# `workspace` set to `false`.
 
 [tasks.test]
 clear = true
 workspace = false
 description = "Runs the test suite"
 category = "Test"
-run_task = { name = ["build-test", "setup-python", "run-test-suite", "run-integrations"] }
+run_task = { name = ["run-test-suite", "run-integrations"] }
 
-[tasks.build-test]
+[tasks.build-test-deps]
+condition = { env_true = ["CARGO_MAKE_CI" ] }
 private = true
 extend = "build"
 args = ["build", "-p", "memory", "--profile", "${CARGO_MAKE_CARGO_PROFILE}"]
 
 [tasks.setup-python]
+condition = { env_true = ["CARGO_MAKE_CI" ] }
 private = true
-script = '''
-#!/usr/bin/env bash
-lib/execution/src/runner/python/setup.sh python3.7
-'''
+command = "bash"
+args = ["lib/execution/src/runner/python/setup.sh", "python3.7"]
+dependencies = ["build-test-deps"]
 
 [tasks.run-test-suite]
 private = true
@@ -44,6 +47,7 @@ args = ["hack", "test", "--no-fail-fast", "@@split(CARGO_HACK_FLAGS, )", "--prof
 private = true
 command = "cargo"
 args = ["test", "--workspace", "--test", "integration", "--no-fail-fast", "--profile", "${CARGO_MAKE_CARGO_PROFILE}", "--all-features"]
+dependencies = ["setup-python"]
 
 
 # Rustdoc must not be executed on the workspace root.
